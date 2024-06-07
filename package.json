@@ -1,0 +1,19 @@
+{
+  "name": "pdfcatalog_to_csv",
+  "version": "1.0.0",
+  "description": "Using IA to extract data from inside a pdf to a csv document.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jeffneck/PdfCatalog_to_csv.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jeffneck/PdfCatalog_to_csv/issues"
+  },
+  "homepage": "https://github.com/Jeffneck/PdfCatalog_to_csv#readme"
+}
