@@ -1,0 +1,86 @@
+const Tesseract = require('tesseract.js');
+const OpenAI = require('openai');
+const fs = require('fs').promises;
+
+// Initialisation de l'API OpenAI
+const openai = new OpenAI({
+  apiKey: 'your-openai-api-key'
+});
+
+/**
+ * Fonction pour reconnaître le texte dans une image en utilisant Tesseract.js.
+ * @param {string} imagePath - Chemin vers l'image.
+ * @returns {Promise<string>} - Texte reconnu dans l'image.
+ */
+async function recognizeText(imagePath) {
+  const { data: { text } } = await Tesseract.recognize(imagePath, 'eng', {
+    logger: m => console.log(m)
+  });
+  return text;
+}
+
+/**
+ * Fonction pour vérifier si le texte contient des prix en euros.
+ * @param {string} text - Texte à analyser.
+ * @returns {Array|null} - Liste des prix trouvés ou null si aucun prix trouvé.
+ */
+function findPrices(text) {
+  const pricePattern = /€\d+(\.\d{2})?/g;
+  return text.match(pricePattern);
+}
+
+/**
+ * Fonction pour lire le prompt à partir d'un fichier.
+ * @param {string} filePath - Chemin vers le fichier contenant le prompt.
+ * @returns {Promise<string>} - Contenu du fichier.
+ */
+async function readPromptFromFile(filePath) {
+  return await fs.readFile(filePath, 'utf-8');
+}
+
+/**
+ * Fonction pour envoyer un prompt à l'API OpenAI et obtenir une réponse.
+ * @param {string} prompt - Prompt à envoyer à l'API OpenAI.
+ * @returns {Promise<string>} - Réponse de l'API OpenAI.
+ */
+async function getOpenAIResponse(prompt) {
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      { role: "system", content: "You are a helpful assistant." },
+      { role: "user", content: prompt }.
+    ]
+  });
+
+  return completion.choices[0].message.content.trim();
+}
+
+/**
+ * Fonction principale pour analyser l'image et obtenir une description des produits.
+ * @param {string} imagePath - Chemin vers l'image.
+ * @param {string} promptFilePath - Chemin vers le fichier contenant le prompt.
+ */
+async function analyzeImageAndDescribeProducts(imagePath, promptFilePath) {
+  try {
+    const text = await recognizeText(imagePath);
+    const prices = findPrices(text);
+
+    if (prices) {
+      console.log('Prices found:', prices);
+    } else {
+      console.log('No prices found.');
+    }
+
+    const basePrompt = await readPromptFromFile(promptFilePath);
+    const prompt = basePrompt + " " + text;
+    const description = await getOpenAIResponse(prompt);
+    console.log('Description des produits:', description);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+// Chemin vers votre image et le fichier de prompt
+const imagePath = 'path/to/your/image.jpg';
+const promptFilePath = 'path/to/your/prompt.txt';
+analyzeImageAndDescribeProducts(imagePath, promptFilePath);
