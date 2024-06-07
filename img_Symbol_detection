@@ -1,0 +1,17 @@
+const Tesseract = require('tesseract.js');
+
+Tesseract.recognize(
+  'path/to/your/image.jpg',
+  'eng',
+  {
+    logger: m => console.log(m)
+  }
+).then(({ data: { text } }) => {
+  const pricePattern = /€\d+(\.\d{2})?/g;
+  const prices = text.match(pricePattern);
+  if (prices) {
+    console.log('Prices found:', prices);
+  } else {
+    console.log('No prices found.');
+  }
+});
